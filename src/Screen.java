@@ -1,9 +1,9 @@
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -12,32 +12,64 @@ import javax.swing.JPanel;
 
 public class Screen extends JPanel {
 
-	private List<DataPoint> points;
+	private List<DataPoint> points, ins, outs;
+	
 	private int min;
 	private DataPoint minP;
 	private DataPoint p1;
 	public Screen() {
 		points = new ArrayList<DataPoint>();
+		ins = new ArrayList<DataPoint>();
+		outs = new ArrayList<DataPoint>();
 		setPreferredSize(new Dimension(700, 600));
 	}
 
 	public void solve() {
+		solve(0, 0, getWidth(), getHeight(), points);
+		
+		//combine the groups
+		for(DataPoint in: ins) {
+			
+		}
+	}
+	public void solve(int x, int y, int width, int height, List<DataPoint> list) {
 
 		// partition the space into 4
-
-		List<DataPoint> q1 = points.stream().filter(e -> e.getX() < getWidth() / 2 && e.getY() < getHeight() / 2)
+		Rectangle r1 = new Rectangle(x, y, width/2+1, height/2+1);
+		Rectangle r2 = new Rectangle(x+width/2, y, width/2, height/2+1);
+		Rectangle r3 = new Rectangle(x, y+height/2, width/2+1, height/2);
+		Rectangle r4 = new Rectangle(x+width/2, y+height/2, width/2+1, height/2+1);
+		List<DataPoint> q1 = list.stream().filter(e -> r1.contains(e.getPoint()))
 				.collect(Collectors.toList());
-		List<DataPoint> q2 = points.stream().filter(e -> e.getX() >= getWidth() / 2 && e.getY() < getHeight() / 2)
+		List<DataPoint> q2 = list.stream().filter(e -> r2.contains(e.getPoint()))
 				.collect(Collectors.toList());
-		List<DataPoint> q3 = points.stream().filter(e -> e.getX() < getWidth() / 2 && e.getY() >= getHeight() / 2)
+		List<DataPoint> q3 = list.stream().filter(e -> r3.contains(e.getPoint()))
 				.collect(Collectors.toList());
-		List<DataPoint> q4 = points.stream().filter(e -> e.getX() >= getWidth() / 2 && e.getY() >= getHeight() / 2)
+		List<DataPoint> q4 = list.stream().filter(e -> r4.contains(e.getPoint()))
 				.collect(Collectors.toList());
 		long start = System.currentTimeMillis();
-		TSM(q1);
-		TSM(q2);
-		TSM(q3);
-		TSM(q4);
+		int minCount = 10;
+		if(q1.size() <= minCount) {
+			TSM(q1);			
+		}else {
+			solve(x, y, width/2, height/2, q1);
+		}
+		if(q2.size() <= minCount) {
+			TSM(q2);			
+		}else {
+			solve(x+width/2, y, width/2, height/2, q2);
+		}
+		if(q3.size() <= minCount) {
+			TSM(q3);			
+		}else {
+			solve(x, y+height/2, width/2, height/2, q3);
+		}
+		if(q4.size() <= minCount) {
+			TSM(q4);			
+		}else {
+			solve(x+width/2, y+height/2, width/2, height/2, q4);
+		}
+	
 		
 		//TSM(points);
 		long end = System.currentTimeMillis();
@@ -48,8 +80,13 @@ public class Screen extends JPanel {
 
 	private void TSM(List<DataPoint> pts) {
 		List<DataPoint> original = pts;
-		if (pts.size() == 0)
+		if (pts.size() <= 1) {
+			pts.forEach(e -> {
+				e.setVisited(true);
+				e.setEnd();
+			});
 			return;
+		}
 		// greedy tsm
 		int lastT = 0;
 		p1 = pts.get(0);
@@ -59,7 +96,7 @@ public class Screen extends JPanel {
 			
 			//p1 = pts.get(0);
 			pts.forEach(e -> {
-				if (e.visited() || e == p1)
+				if (e.visited() || e == p1 || p1 == null)
 					return;
 				int dist = p1.dist2(e);
 				//System.out.println("ch");
@@ -87,8 +124,17 @@ public class Screen extends JPanel {
 			//System.out.println();
 			
 		}
-		original.get(0).setEnd();
-		p1.setEnd();
+		DataPoint p0 = original.get(0);
+
+		p0.setEnd();
+		ins.add(p0);
+		if(p1 != null) {
+			p1.setEnd();
+			outs.add(p1);
+		} else {
+			outs.add(p0);
+		}
+
 	}
 
 	public void generate() {

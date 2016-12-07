@@ -1,35 +1,46 @@
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class DataPoint {
 	private int x, y;
-	private DataPoint in, out;
+	private Point point;
+	DataPoint in, out;
 	private boolean visited = false;
 	private boolean end = false;
 	public DataPoint(int x, int y) {
 		this.x = x;
 		this.y = y;
+		point = new Point(x, y);
 		in = null;
 		out = null;
 	}
 
 	public void addNeighbors(DataPoint... dataPoints) {
 		if(dataPoints.length == 1) {
-			if(in == null) 
+			if(in == null) {
 				in = dataPoints[0];
-			else 
+				dataPoints[0].out = this;
+			}
+			else {
 				out = dataPoints[0];
+				dataPoints[0].in = this;
+			}
 		}
 		else {
 			in = dataPoints[0];
 			out = dataPoints[1];
-			
+			dataPoints[0].out = this;
+			dataPoints[1].in = this;
 		}
 	}
 
+	public Point getPoint() {
+		return point;
+	}
 
 	public void draw(Graphics g) {
 		if(end) {
