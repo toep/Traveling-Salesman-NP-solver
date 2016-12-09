@@ -11,6 +11,7 @@ public class DataPoint {
 	DataPoint in, out;
 	private boolean visited = false;
 	private boolean end = false;
+	private boolean sp = false;
 	public DataPoint(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -47,7 +48,11 @@ public class DataPoint {
 			g.setColor(Color.red);
 			g.fillOval(x-3, y-3, 6, 6);
 		}
+		
 		g.setColor(Color.BLACK);
+		if(sp) {
+			g.setColor(Color.GREEN);
+		}
 		g.drawOval(x - 3, y - 3, 6, 6);
 		
 		g.setColor(Color.BLUE);
@@ -67,7 +72,8 @@ public class DataPoint {
 	}
 
 	public void setVisited(boolean b) {
-		visited = b;
+		visited = true;
+		if(!b) sp = true;
 	}
 
 	public List<DataPoint> getNeighbors() {
